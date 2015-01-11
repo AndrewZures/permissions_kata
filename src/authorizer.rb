@@ -4,26 +4,29 @@ require_relative 'db/models/roles'
 
 class Authorizer
 
-  def self.authorized?(org, user)
-    return error_result if DB::Organizations.find(org[:id]).nil?
+  AUTHORIZED_ROLES = [
+    DB::Roles::Types[:ADMIN],
+    DB::Roles::Types[:USER]
+  ]
 
-    org_ids = DB::Organizations.parent_ids_of(org[:id])
-    org_ids.unshift(org[:id])
-    permission = find_best_permission(org_ids, user)
+
+  def self.authorized?(org, user)
+    return default_error_status if DB::Organizations.find(org[:id]).nil?
+
+    org_lineage = build_org_lineage(org)
+    permission = find_best_permission(org_lineage, user)
     format_status(permission)
+  end
+
+  def self.build_org_lineage(org)
+    [org[:id]].concat(DB::Organizations.parent_ids_of(org[:id]))
   end
 
   def self.format_status(permission)
     return { authorized: false, status: "no permission found"} if permission.nil?
-    case permission[:type]
-    when DB::Roles::Types[:DENIED] then return { authorized: false, status: "denied" }
-    when DB::Roles::Types[:USER]   then return { authorized: true, status: "user" }
-    when DB::Roles::Types[:ADMIN]  then return { authorized: true, status: "admin" }
-    end
-  end
 
-  def self.error_result
-    { authorized: false, status: "org not found" }
+    { authorized: self.permission_authorized?(permission),
+      status: permission[:type].to_s }
   end
 
   def self.find_best_permission(org_ids, user)
@@ -35,6 +38,16 @@ class Authorizer
     end
 
     found
+  end
+
+  private
+
+  def self.permission_authorized?(permission)
+    AUTHORIZED_ROLES.include?(permission[:type])
+  end
+
+  def self.default_error_status
+    { authorized: false, status: "org not found" }
   end
 
 end

@@ -5,6 +5,7 @@ require_relative '../src/db/models/roles'
 
 describe "authorizer" do
   let(:user){ { id: 10 } }
+
   let(:org1){            {id: 1, parent_id: 10} }
   let(:org2){            {id: 2, parent_id: 20} }
   let(:org3){            {id: 3, parent_id: 30} }
@@ -85,13 +86,39 @@ describe "authorizer" do
 
   context "when multiple permission for same user" do
 
-    it "evaluates grandparent permission if no other permission found" do
+    it "prioritizes current org permission parent permissions" do
       grandchild_permission = { org_id:  grandchild_org1[:id], user_id: user[:id],
                                 type: DB::Roles::Types[:DENIED] }
 
       DB::Permissions.add(grandchild_permission)
       result = Authorizer.authorized?(grandchild_org1, user)
+
       expect(result).to eq({authorized: false, status: "denied" })
+    end
+
+    it "prioritizes parent org permission over grandparent permission" do
+      child_permission = { org_id: child_org1[:id], user_id: user[:id],
+                                type: DB::Roles::Types[:DENIED] }
+
+      DB::Permissions.add(child_permission)
+      result = Authorizer.authorized?(grandchild_org1, user)
+
+      expect(result).to eq({authorized: false, status: "denied" })
+    end
+
+    it "children of org can have different privilege settings" do
+      grandchild_org1_permission = { org_id: grandchild_org1[:id], user_id: user[:id],
+                                type: DB::Roles::Types[:DENIED] }
+      DB::Permissions.add(grandchild_org1_permission)
+
+      grandchild_org2 = {id: 6, parent_id: 4}
+      DB::Organizations.add(grandchild_org2)
+
+      gchild1_auth = Authorizer.authorized?(grandchild_org1, user)
+      gchild2_auth = Authorizer.authorized?(grandchild_org2, user)
+
+      expect(gchild1_auth).to eq({authorized: false, status: "denied" })
+      expect(gchild2_auth).to eq({authorized: true,  status: "admin" })
     end
 
   end
