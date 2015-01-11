@@ -1,5 +1,5 @@
-require_relative '../src/permissions'
-require_relative '../src/roles'
+require_relative '../../../src/db/models/permissions'
+require_relative '../../../src/db/models/roles'
 
 describe "permissions" do
   let(:permission1){ { user_id: 1, org_id: 1, type: DB::Roles::Types[:USER] } }

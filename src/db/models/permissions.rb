@@ -14,15 +14,15 @@ module DB
     end
 
     def self.search(options)
-      return @@list.keep_if{ |el| filter(el, options) }
+      return @@list.keep_if{ |permission| filter(permission, options) }
     end
 
 
-    def self.filter(record, options)
+    def self.filter(permission, options)
       criteria = []
-      criteria << (record[:type] == options[:type]) if options.key?(:type)
-      criteria << (record[:org_id] == options[:org_id]) if options.key?(:org_id)
-      criteria << (record[:user_id] == options[:user_id]) if options.key?(:user_id)
+      criteria << (permission[:type] == options[:type]) if options.key?(:type)
+      criteria << (permission[:org_id] == options[:org_id]) if options.key?(:org_id)
+      criteria << (permission[:user_id] == options[:user_id]) if options.key?(:user_id)
 
       return criteria.all?
     end
