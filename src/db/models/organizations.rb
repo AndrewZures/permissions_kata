@@ -2,31 +2,40 @@ module DB
   class Organizations
 
     @@list = []
-    @@tree = nil
 
-    REQUIRED_FIELDS = [:org_id, :parent_id]
+    REQUIRED_FIELDS = [:id, :parent_id]
 
     def self.add(org)
-      @@list << org
+      @@list << org if valid?(org)
     end
 
-    def self.insert(org)
+    def self.valid?(org)
+      REQUIRED_FIELDS.reduce(true){ |agg, f| agg && org.key?(f) }
     end
 
-    def self.find_parents_of(org)
-      parents = []
-      while parent[:parent_id] != :root
-        parent = self.find_parent(org)
-        parents << parent
-        org = parent
+    def self.find(id)
+      @@list.find{ |org| org[:id] == id }
+    end
+
+    def self.parent_of(id)
+      child = find(id)
+      find(child[:parent_id])
+    end
+
+    def self.parent_ids_of(id)
+      parent_ids = []
+
+      found = parent_of(id)
+      while !found.nil?
+        parent_ids << found[:id]
+        found = parent_of(found[:id])
       end
 
-      parents
+      parent_ids
     end
 
-    def find(options)
-      @@list.each{ |el| return el if el[:org_id] == options[:org_id] }
-      nil
+    def self.destroy_all
+      @@list = []
     end
 
   end
