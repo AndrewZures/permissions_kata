@@ -13,7 +13,7 @@ describe "permissions" do
   end
 
   after(:each) do
-    DB::Permissions.reset
+    DB::Permissions.destroy_all
   end
 
   it "saves a permission" do

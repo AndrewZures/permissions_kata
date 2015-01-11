@@ -17,6 +17,10 @@ describe "organizations" do
     expect(DB::Organizations.find(org[:id])).to eq(org)
   end
 
+  xit "does not add a duplication organization" do
+
+  end
+
   it "returns nil if parent cannot be found" do
     expect(DB::Organizations.find(-100)).to be_nil
   end

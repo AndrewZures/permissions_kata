@@ -13,8 +13,13 @@ module DB
       REQUIRED_FIELDS.reduce(true){ |agg, f| agg && permission.key?(f) }
     end
 
+    def self.find(org_id, user_id)
+      options = { org_id: org_id, user_id: user_id }
+      @@list.find{ |p| filter(p, options) }
+    end
+
     def self.search(options)
-      return @@list.keep_if{ |permission| filter(permission, options) }
+      @@list.find_all{ |permission| filter(permission, options) }
     end
 
 
@@ -24,10 +29,10 @@ module DB
       criteria << (permission[:org_id] == options[:org_id]) if options.key?(:org_id)
       criteria << (permission[:user_id] == options[:user_id]) if options.key?(:user_id)
 
-      return criteria.all?
+      criteria.all?
     end
 
-    def self.reset
+    def self.destroy_all
       @@list = []
     end
 
