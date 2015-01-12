@@ -3,7 +3,7 @@ module DB
 
     @@list = []
 
-    REQUIRED_FIELDS = [:type, :org_id, :user_id]
+    REQUIRED_FIELDS = [:role, :org_id, :user_id]
 
     def self.add(permission)
       @@list << permission if valid_permission?(permission)
@@ -25,7 +25,7 @@ module DB
 
     def self.filter(permission, options)
       criteria = []
-      criteria << (permission[:type] == options[:type]) if options.key?(:type)
+      criteria << (permission[:role] == options[:role]) if options.key?(:role)
       criteria << (permission[:org_id] == options[:org_id]) if options.key?(:org_id)
       criteria << (permission[:user_id] == options[:user_id]) if options.key?(:user_id)
 

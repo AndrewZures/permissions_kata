@@ -2,9 +2,9 @@ require_relative '../../../src/db/models/permissions'
 require_relative '../../../src/db/models/roles'
 
 describe "permissions" do
-  let(:permission1){ { user_id: 1, org_id: 1, type: DB::Roles::Types[:USER] } }
-  let(:permission2){ { user_id: 2, org_id: 2, type: DB::Roles::Types[:ADMIN] } }
-  let(:permission3){ { user_id: 3, org_id: 2, type: DB::Roles::Types[:DENIED] } }
+  let(:permission1){ { user_id: 1, org_id: 1, role: DB::Roles::Types[:USER] } }
+  let(:permission2){ { user_id: 2, org_id: 2, role: DB::Roles::Types[:ADMIN] } }
+  let(:permission3){ { user_id: 3, org_id: 2, role: DB::Roles::Types[:DENIED] } }
 
   before(:each) do
     DB::Permissions.add(permission1)
@@ -18,13 +18,13 @@ describe "permissions" do
 
   it "saves a permission" do
     # testing save and search == bad
-    results = DB::Permissions.search({ type: DB::Roles::Types[:USER] })
+    results = DB::Permissions.search({ role: DB::Roles::Types[:USER] })
     expect(results.count).to eq(1)
     expect(results.first).to eq(permission1)
   end
 
-  it "can search by type" do
-    results = DB::Permissions.search({ type: DB::Roles::Types[:USER] })
+  it "can search by role" do
+    results = DB::Permissions.search({ role: DB::Roles::Types[:USER] })
     expect(results.count).to eq(1)
     expect(results.first).to eq(permission1)
   end

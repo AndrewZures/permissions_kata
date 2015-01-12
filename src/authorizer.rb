@@ -26,7 +26,7 @@ class Authorizer
     return { authorized: false, status: "no permission found"} if permission.nil?
 
     { authorized: self.permission_authorized?(permission),
-      status: permission[:type].to_s }
+      status: permission[:role].to_s }
   end
 
   def self.find_best_permission(org_ids, user)
@@ -43,7 +43,7 @@ class Authorizer
   private
 
   def self.permission_authorized?(permission)
-    AUTHORIZED_ROLES.include?(permission[:type])
+    AUTHORIZED_ROLES.include?(permission[:role])
   end
 
   def self.default_error_status

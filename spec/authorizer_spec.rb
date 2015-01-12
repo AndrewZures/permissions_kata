@@ -27,13 +27,13 @@ describe "authorizer" do
 
     permission1 = { user_id: user[:id],
                     org_id:  root_org[:id],
-                    type:    DB::Roles::Types[:DENIED] }
+                    role:    DB::Roles::Types[:DENIED] }
     permission2 = { user_id: user[:id],
                     org_id:  org1[:id],
-                    type:    DB::Roles::Types[:ADMIN] }
+                    role:    DB::Roles::Types[:ADMIN] }
     permission3 = { user_id: user[:id],
                     org_id:  child_org2[:id],
-                    type:    DB::Roles::Types[:USER] }
+                    role:    DB::Roles::Types[:USER] }
 
     DB::Permissions.add(permission1)
     DB::Permissions.add(permission2)
@@ -49,7 +49,7 @@ describe "authorizer" do
     new_user = { id: :new }
     new_permission = { user_id: new_user[:id],
                       org_id:  root_org[:id],
-                      type:    DB::Roles::Types[:ADMIN] }
+                      role:    DB::Roles::Types[:ADMIN] }
 
     DB::Permissions.add(new_permission)
 
@@ -93,8 +93,8 @@ describe "authorizer" do
   end
 
   it "evaluates grandparent permission if no other permission found" do
-    result = Authorizer.authorized?(child_org1, user)
-    expect(result).to eq({ authorized: true, status: "admin"})
+    result = Authorizer.authorized?(child_org3, user)
+    expect(result).to eq({ authorized: false, status: "denied"})
   end
 
   context "permission interaction" do
