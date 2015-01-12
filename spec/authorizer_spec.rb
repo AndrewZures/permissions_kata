@@ -6,31 +6,38 @@ require_relative '../src/db/models/roles'
 describe "authorizer" do
   let(:user){ { id: 10 } }
 
-  let(:root_org){        { id: :root, parent_id: nil } }
-  let(:org1){            { id: :org1, parent_id: :root } }
-  let(:org2){            { id: :org2, parent_id: :root } }
-  let(:child_org1){      { id: :child_org1, parent_id: :org1 } }
-  let(:child_org2){      { id: :child_org2, parent_id: :org1 } }
-  let(:child_org3){      { id: :child_org3, parent_id: :org2 } }
+  let(:root_org){   { id: :root,       parent_id: nil } }
 
-  let(:permission1){
-    { user_id: user[:id], org_id: root_org[:id], type: DB::Roles::Types[:DENIED] } }
-  let(:permission2){
-    { user_id: user[:id], org_id: org1[:id], type: DB::Roles::Types[:ADMIN] } }
-  let(:permission3){
-    { user_id: user[:id], org_id: child_org2[:id], type: DB::Roles::Types[:USER] } }
+  let(:org1){       { id: :org1,       parent_id: :root } }
+  let(:child_org1){ { id: :child_org1, parent_id: :org1 } }
+  let(:child_org2){ { id: :child_org2, parent_id: :org1 } }
+
+  let(:org2){       { id: :org2,       parent_id: :root } }
+  let(:child_org3){ { id: :child_org3, parent_id: :org2 } }
 
   before(:each) do
+    DB::Organizations.add(root_org)
+
+    DB::Organizations.add(org1)
+    DB::Organizations.add(child_org1)
+    DB::Organizations.add(child_org2)
+
+    DB::Organizations.add(org2)
+    DB::Organizations.add(child_org3)
+
+    permission1 = { user_id: user[:id],
+                    org_id:  root_org[:id],
+                    type:    DB::Roles::Types[:DENIED] }
+    permission2 = { user_id: user[:id],
+                    org_id:  org1[:id],
+                    type:    DB::Roles::Types[:ADMIN] }
+    permission3 = { user_id: user[:id],
+                    org_id:  child_org2[:id],
+                    type:    DB::Roles::Types[:USER] }
+
     DB::Permissions.add(permission1)
     DB::Permissions.add(permission2)
     DB::Permissions.add(permission3)
-
-    DB::Organizations.add(root_org)
-    DB::Organizations.add(org1)
-    DB::Organizations.add(org2)
-    DB::Organizations.add(child_org1)
-    DB::Organizations.add(child_org2)
-    DB::Organizations.add(child_org3)
   end
 
   after(:each) do
@@ -38,29 +45,44 @@ describe "authorizer" do
     DB::Organizations.destroy_all
   end
 
-  it "is denied if provided organization is not found" do
+  it "keeps individual user's access" do
+    new_user = { id: :new }
+    new_permission = { user_id: new_user[:id],
+                      org_id:  root_org[:id],
+                      type:    DB::Roles::Types[:ADMIN] }
+
+    DB::Permissions.add(new_permission)
+
+    existing_user_auth = Authorizer.authorized?(root_org, user)
+    expect(existing_user_auth).to eq({authorized: false, status: "denied" })
+
+    new_user_auth = Authorizer.authorized?(root_org, new_user)
+    expect(new_user_auth).to eq({authorized: true, status: "admin" })
+  end
+
+  it "denies if provided organization is not found" do
     result = Authorizer.authorized?({id: -1}, user)
     expect(result).to eq({authorized: false, status: "org not found" })
   end
 
-  it "is denied if no permission found" do
+  it "denies if no permission found" do
     DB::Permissions.destroy_all
 
     result = Authorizer.authorized?(org1, user)
     expect(result).to eq({authorized: false, status: "no permission found" })
   end
 
-  it "is denied if denied permission found" do
+  it "denies if denied permission found" do
     result = Authorizer.authorized?(root_org, user)
     expect(result).to eq({authorized: false, status: "denied" })
   end
 
-  it "is authorized if user permission found" do
+  it "authorizes if user permission found" do
     result = Authorizer.authorized?(child_org2, user)
     expect(result).to eq({authorized: true, status: "user" })
   end
 
-  it "is authorized if admin permission found" do
+  it "authorizes if admin permission found" do
     result = Authorizer.authorized?(org1, user)
     expect(result).to eq({authorized: true, status: "admin" })
   end
@@ -77,7 +99,7 @@ describe "authorizer" do
 
   context "permission interaction" do
 
-    it "authorizes user for org and all child orgs" do
+    it "permissions trickle down to children" do
       root_access  = Authorizer.authorized?(root_org, user)
       org_access   = Authorizer.authorized?(org2, user)
       child_access = Authorizer.authorized?(child_org3, user)
@@ -87,7 +109,6 @@ describe "authorizer" do
       expect(org_access).to eq(admin_authorized)
       expect(child_access).to eq(admin_authorized)
     end
-
 
     it "prioritizes current permission over parent permissions" do
       result = Authorizer.authorized?(child_org2, user)
@@ -100,7 +121,7 @@ describe "authorizer" do
       expect(result).to eq({authorized: true, status: "admin" })
     end
 
-    it "children of parent can have different privilege settings" do
+    it "children of same parent can have different privilege settings" do
       child1_auth = Authorizer.authorized?(child_org1, user)
       child2_auth = Authorizer.authorized?(child_org2, user)
 
