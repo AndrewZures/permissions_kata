@@ -30,7 +30,7 @@ describe "organizations" do
     expect(duplicated).to eq(false)
   end
 
-  it "does not add child not to existing child node (limit tree to 3 levels)" do
+  it "does not add a child to existing child node (limit tree to 3 levels)" do
     expect(DB::Organizations.is_child_org(org)).to eq(false)
 
     child_org = { id: 8, parent_id: org[:id] }
@@ -40,6 +40,9 @@ describe "organizations" do
   end
 
   it "does not add org if cannot be connected to existing org tree structured" do
+    child_org = { id: 8, parent_id: :not_connected_to_tree }
+    added = DB::Organizations.add(child_org)
+    expect(added).to eq(false)
   end
 
   it "finds a parent organization" do
