@@ -26,8 +26,9 @@ module DB
       @@table = []
     end
 
-    def self.parent_ids_of(org)
-      parent_ids = []
+    def self.lineage_for(org)
+      return [] if !has_fields?(org)
+      parent_ids = [org[:id]]
 
       found = parent_of(org)
       while !found.nil?
@@ -64,13 +65,13 @@ module DB
     end
 
     def self.valid_parent?(org)
-      parent = self.find_by_id(org[:parent_id])
+      parent = find_by_id(org[:parent_id])
       !parent.nil? && !child_org?(parent)
     end
 
     def self.child_org?(org)
-      lineage = parent_ids_of(org)
-      lineage.length > 1
+      lineage = lineage_for(org)
+      lineage.length > 2
     end
 
     def self.can_be_root?(org)

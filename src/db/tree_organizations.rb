@@ -41,7 +41,7 @@ module DB
       @@table = []
     end
 
-    def self.parent_ids_of(org)
+    def self.lineage_for(org)
       lineage_ids_tree(@@tree, org)
     end
 

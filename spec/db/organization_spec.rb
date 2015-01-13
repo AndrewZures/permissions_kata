@@ -50,9 +50,9 @@ describe DB::Organizations do
     expect(organizations.parent_of(child_org)).to eq(org)
   end
 
-  it "returns an list of parent org ids" do
-    lineage = organizations.parent_ids_of(child_org)
-    expect(lineage).to eq([org[:id], root_org[:id]])
+  it "returns an org lineage" do
+    lineage = organizations.lineage_for(child_org)
+    expect(lineage).to eq([child_org[:id], org[:id], root_org[:id]])
   end
 
 end

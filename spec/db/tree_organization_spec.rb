@@ -92,7 +92,7 @@ describe DB::TreeOrganizations do
     it "returns a list of parent org ids" do
       build_default_tree()
 
-      lineage = organizations.parent_ids_of(child_org)
+      lineage = organizations.lineage_for(child_org)
       expect(lineage).to eq([:child, :org, :root])
     end
 

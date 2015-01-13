@@ -5,7 +5,8 @@ require_relative '../src/db/roles'
 
 describe "authorizer" do
   let(:user){ { id: 10 } }
-  let(:organizations){ DB::TreeOrganizations }
+  # let(:organizations){ DB::TreeOrganizations }
+  let(:organizations){ DB::Organizations }
 
   let(:root_org){   { id: :root,       parent_id: nil } }
 
