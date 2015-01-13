@@ -1,7 +1,8 @@
 module DB
   class TreeOrganizations
 
-    MAX_LEVEL = 3
+    FIRST_LEVEL = 1
+    MAX_LEVEL   = 3
 
     @@tree = {}
     @@table = []
@@ -10,7 +11,7 @@ module DB
       if can_be_root?(org)
         add_root(org)
       else
-        insert_into_tree(@@tree, org, 1)
+        insert_into_tree(@@tree, org, FIRST_LEVEL)
       end
     end
 
