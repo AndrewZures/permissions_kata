@@ -34,7 +34,7 @@ class Authorizer
 
     while found.nil? && !org_ids.empty? do
       org_id = org_ids.shift()
-      found = DB::Permissions.find(org_id, user[:id])
+      found = DB::Permissions.find({ org_id: org_id, user_id: user[:id] })
     end
 
     found

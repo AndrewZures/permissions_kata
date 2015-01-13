@@ -14,7 +14,7 @@ module DB
     end
 
     def self.add(org)
-      if valid?(org)
+      if addable?(org)
         @@table << org
         true
       else
@@ -45,7 +45,7 @@ module DB
 
     private
 
-    def self.valid?(org)
+    def self.addable?(org)
       has_fields?(org) && can_add_to_tree?(org)
     end
 

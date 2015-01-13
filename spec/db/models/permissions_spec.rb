@@ -20,10 +20,31 @@ describe DB::Permissions do
   end
 
   it "saves a permission" do
-    # testing save and search == bad
-    results = permissions.search({ role: role_types[:USER] })
-    expect(results.count).to eq(1)
-    expect(results.first).to eq(permission1)
+    results = permissions.search({})
+
+    expect(results.count).to eq(3)
+    expect(results).to include(permission1)
+    expect(results).to include(permission2)
+    expect(results).to include(permission3)
+  end
+
+  it "determines if permission is valid" do
+    valid_permission = { user_id: 8, org_id: 3, role: role_types[:USER] }
+    validated = permissions.valid?(valid_permission)
+    expect(validated).to eq(true)
+
+    invalid_permission = { user_id: :just_an_id }
+    validated = permissions.valid?(invalid_permission)
+    expect(validated).to eq(false)
+  end
+
+  it "determines if permission is addable" do
+    addable_permission = { user_id: 8, org_id: 3, role: role_types[:USER]}
+    addable = permissions.addable?(addable_permission)
+    expect(addable).to eq(true)
+
+    added = permissions.addable?(permission1)
+    expect(added).to eq(false)
   end
 
   it "can search by role" do
@@ -49,12 +70,6 @@ describe DB::Permissions do
     results = permissions.search({ org_id: 2, user_id: 3 })
     expect(results.count).to eq(1)
     expect(results).to include(permission3)
-  end
-
-  it "only validates if all required fields are present" do
-    permissions.add({ org_id: 4 })
-    results = permissions.search({ org_id: 4 })
-    expect(results).to be_empty
   end
 
 end

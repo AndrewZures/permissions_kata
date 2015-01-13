@@ -45,12 +45,9 @@ describe DB::Organizations do
   end
 
   it "finds a parent organization" do
+    expect(organizations.parent_of(root_org)).to eq(nil)
     expect(organizations.parent_of(org)).to eq(root_org)
     expect(organizations.parent_of(child_org)).to eq(org)
-  end
-
-  xit "returns nil if parent cannot be found" do
-    expect(organizations.find_by_id(-100)).to be_nil
   end
 
   it "returns an list of parent org ids" do
