@@ -11,7 +11,7 @@ class Authorizer
 
 
   def self.authorized?(org, user)
-    return default_error_status if DB::Organizations.find(org[:id]).nil?
+    return default_error_status if DB::Organizations.find(org).nil?
 
     org_lineage = build_org_lineage(org)
     permission = find_best_permission(org_lineage, user)
@@ -19,7 +19,7 @@ class Authorizer
   end
 
   def self.build_org_lineage(org)
-    [org[:id]].concat(DB::Organizations.parent_ids_of(org[:id]))
+    [org[:id]].concat(DB::Organizations.parent_ids_of(org))
   end
 
   def self.format_status(permission)

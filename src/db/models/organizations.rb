@@ -5,8 +5,12 @@ module DB
 
     REQUIRED_FIELDS = [:id, :parent_id]
 
-    def self.find(id)
+    def self.find_by_id(id)
       @@table.find{ |org| org[:id] == id }
+    end
+
+    def self.find(org)
+      has_fields?(org) ? find_by_id(org[:id]) : nil
     end
 
     def self.add(org)
@@ -22,21 +26,21 @@ module DB
       @@table = []
     end
 
-    def self.parent_ids_of(id)
+    def self.parent_ids_of(org)
       parent_ids = []
 
-      found = parent_of(id)
+      found = parent_of(org)
       while !found.nil?
         parent_ids << found[:id]
-        found = parent_of(found[:id])
+        found = parent_of(found)
       end
 
       parent_ids
     end
 
-    def self.parent_of(id)
-      child = find(id)
-      child ? find(child[:parent_id]) : nil
+    def self.parent_of(org)
+      child = find(org)
+      child ? find_by_id(child[:parent_id]) : nil
     end
 
     private
@@ -46,6 +50,8 @@ module DB
     end
 
     def self.has_fields?(org)
+      return if !org.is_a?(Hash)
+
       REQUIRED_FIELDS.reduce(true){ |agg, f| agg && org.key?(f) }
     end
 
@@ -58,12 +64,12 @@ module DB
     end
 
     def self.valid_parent?(org)
-      parent = self.find(org[:parent_id])
+      parent = self.find_by_id(org[:parent_id])
       !parent.nil? && !child_org?(parent)
     end
 
     def self.child_org?(org)
-      lineage = parent_ids_of(org[:id])
+      lineage = parent_ids_of(org)
       lineage.length > 1
     end
 

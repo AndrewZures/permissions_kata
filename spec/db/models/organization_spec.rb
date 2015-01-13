@@ -18,7 +18,7 @@ describe DB::Organizations do
   end
 
   it "adds an organization" do
-    expect(organizations.find(org[:id])).to eq(org)
+    expect(organizations.find(org)).to eq(org)
   end
 
   it "does not add root org if root org already exists" do
@@ -45,16 +45,16 @@ describe DB::Organizations do
   end
 
   it "finds a parent organization" do
-    expect(organizations.parent_of(org[:id])).to eq(root_org)
-    expect(organizations.parent_of(child_org[:id])).to eq(org)
+    expect(organizations.parent_of(org)).to eq(root_org)
+    expect(organizations.parent_of(child_org)).to eq(org)
   end
 
-  it "returns nil if parent cannot be found" do
-    expect(organizations.find(-100)).to be_nil
+  xit "returns nil if parent cannot be found" do
+    expect(organizations.find_by_id(-100)).to be_nil
   end
 
   it "returns an list of parent org ids" do
-    lineage = organizations.parent_ids_of(child_org[:id])
+    lineage = organizations.parent_ids_of(child_org)
     expect(lineage).to eq([org[:id], root_org[:id]])
   end
 
