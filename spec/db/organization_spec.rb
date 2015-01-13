@@ -1,4 +1,4 @@
-require_relative '../../../src/db/models/organizations'
+require_relative '../../src/db/organizations'
 
 describe DB::Organizations do
   let(:organizations){ described_class }

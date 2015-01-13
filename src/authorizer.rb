@@ -1,6 +1,6 @@
-require_relative 'db/models/permissions'
-require_relative 'db/models/organizations'
-require_relative 'db/models/roles'
+require_relative 'db/permissions'
+require_relative 'db/organizations'
+require_relative 'db/roles'
 
 class Authorizer
 

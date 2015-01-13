@@ -1,5 +1,5 @@
-require_relative '../../../src/db/models/permissions'
-require_relative '../../../src/db/models/roles'
+require_relative '../../src/db/permissions'
+require_relative '../../src/db/roles'
 
 describe DB::Permissions do
   let(:permissions){ described_class }

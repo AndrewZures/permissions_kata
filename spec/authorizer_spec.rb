@@ -1,7 +1,7 @@
 require_relative '../src/authorizer'
-require_relative '../src/db/models/organizations'
-require_relative '../src/db/models/permissions'
-require_relative '../src/db/models/roles'
+require_relative '../src/db/organizations'
+require_relative '../src/db/permissions'
+require_relative '../src/db/roles'
 
 describe "authorizer" do
   let(:user){ { id: 10 } }
