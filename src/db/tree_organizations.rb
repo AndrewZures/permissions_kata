@@ -1,6 +1,8 @@
 module DB
   class TreeOrganizations
 
+    MAX_LEVEL = 3
+
     @@tree = {}
     @@table = []
 
@@ -8,25 +10,13 @@ module DB
       if can_be_root?(org)
         add_root(org)
       else
-        insert_into_tree(@@tree, org)
-      end
-    end
-
-    def self.build_table(table)
-      loop do
-        initial = table.dup
-        table.delete_if { |o| add(o) }
-        break if initial == table
+        insert_into_tree(@@tree, org, 1)
       end
     end
 
     def self.find(org)
-      found_id = find_in_tree(@@tree, org)
-      find_in_table(found_id)
-    end
-
-    def self.find_in_table(id)
-      @@table.find{ |o| o[:id] == id }
+      found_id = find_id(@@tree, org)
+      find_org_in_table(found_id)
     end
 
     def self.org_table
@@ -50,16 +40,28 @@ module DB
       lineage_ids_tree(@@tree, org)
     end
 
+    def self.build_tree(table)
+      loop do
+        initial = table.dup
+        table.delete_if { |o| add(o) }
+        break if initial == table
+      end
+    end
+
     private
 
-    def self.find_in_tree(node, org)
+    def self.find_org_in_table(id)
+      @@table.find{ |o| o[:id] == id }
+    end
+
+    def self.find_id(node, org)
       return nil if node.empty?
 
       node.each do |id, children|
         if id == org[:id]
           return id
         else
-          status = find_in_tree(children, org)
+          status = find_id(children, org)
           return status if !status.nil?
         end
       end
@@ -82,14 +84,14 @@ module DB
       return []
     end
 
-    def self.insert_into_tree(node, org)
-      return false if node.empty?
+    def self.insert_into_tree(node, org, lvl)
+      return false if node.empty? || lvl >= MAX_LEVEL
 
       node.each do |id, children|
         if can_add_as_child?(org, id, children)
           return add_to_children(org, children)
         else
-          insert_into_tree(children, org)
+          insert_into_tree(children, org, lvl += 1)
         end
       end
 
@@ -137,7 +139,6 @@ module DB
     def self.can_be_root?(org)
       !has_root? && org[:id] == :root
     end
-
 
     def self.has_root?
       @@tree.key?(:root)

@@ -7,6 +7,12 @@ describe DB::TreeOrganizations do
   let(:org){        {id: :org,  parent_id: :root } }
   let(:child_org){  {id: :child, parent_id: :org } }
 
+  before(:each) do
+    # organizations.add(root_org)
+    # organizations.add(org)
+    # organizations.add(child_org)
+  end
+
   after(:each) do
     organizations.destroy_all
   end
@@ -61,6 +67,17 @@ describe DB::TreeOrganizations do
       expect(organizations.org_tree).to eq({ root: { org: {} } })
     end
 
+    it 'does not add child not to existing child node' do
+      organizations.add(root_org)
+      organizations.add(org)
+      organizations.add(child_org)
+
+      added = organizations.add({id: 1234, parent_id: child_org[:id]})
+
+      expect(added).to eq(false)
+      expect(organizations.org_tree).to eq({ root: { org: { child: {} } } })
+    end
+
     it "removes an org from the tree" do
       organizations.add(root_org)
       organizations.add(org)
@@ -68,6 +85,15 @@ describe DB::TreeOrganizations do
 
       organizations.remove(org)
       expect(organizations.org_tree).to eq({ root: { child: {} } })
+    end
+
+    it "does not remove root" do
+      organizations.add(root_org)
+      organizations.add(org)
+      organizations.add(child_org)
+
+      organizations.remove(root_org)
+      expect(organizations.org_tree).to eq({ root: { org: { child: {} }}})
     end
 
     it "returns a list of parent org ids" do
@@ -107,14 +133,14 @@ describe DB::TreeOrganizations do
 
       it "builds a tree from a table" do
         table = [org, root_org, child_org]
-        organizations.build_table(table)
+        organizations.build_tree(table)
 
         expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
       end
 
       it "does not add unconnected orgs when building tree" do
         table = [org, root_org, child_org, {id: 134, parent_id: :unconnected } ]
-        organizations.build_table(table)
+        organizations.build_tree(table)
 
         expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
       end
