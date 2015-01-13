@@ -17,7 +17,11 @@ module DB
 
     def self.find(org)
       found_id = find_id(@@tree, org)
-      find_org_in_table(found_id)
+      find_by_id(found_id)
+    end
+
+    def self.find_by_id(id)
+      find_org_in_table(id)
     end
 
     def self.org_table
@@ -99,7 +103,7 @@ module DB
       return false
     end
 
-    def self.remove_from_tree(node, org)
+    def self.remove_from_tree(node, org, parent_id=nil)
       to_remove = nil
 
       node.each do |id, children|
@@ -107,19 +111,28 @@ module DB
           to_remove = { id: id, children: children}
           break;
         else
-          remove_from_tree(children, org)
+          remove_from_tree(children, org, id)
         end
       end
 
-      !to_remove.nil? ? remove_node(to_remove, node, org) : false
+      !to_remove.nil? ? remove_node(to_remove, node, org, parent_id) : false
     end
 
-    def self.remove_node(found, node, org)
+    def self.remove_node(found, node, org, parent_id)
       return false if found[:id] == :root
 
+      delete_from_tree(node, found)
+      delete_from_table(org, found, parent_id)
+    end
+
+    def self.delete_from_tree(node, found)
       node.delete(found[:id])
       node.merge!(found[:children])
+    end
+
+    def self.delete_from_table(org, found, parent_id)
       @@table.delete(org)
+      @@table.each { |o| o[:parent_id] = parent_id if o[:parent_id] == found[:id] }
       true
     end
 
