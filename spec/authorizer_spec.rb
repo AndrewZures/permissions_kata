@@ -5,6 +5,7 @@ require_relative '../src/db/roles'
 
 describe "authorizer" do
   let(:user){ { id: 10 } }
+  let(:organizations){ DB::TreeOrganizations }
 
   let(:root_org){   { id: :root,       parent_id: nil } }
 
@@ -16,14 +17,14 @@ describe "authorizer" do
   let(:child_org3){ { id: :child_org3, parent_id: :org2 } }
 
   before(:each) do
-    DB::Organizations.add(root_org)
+    organizations.add(root_org)
 
-    DB::Organizations.add(org1)
-    DB::Organizations.add(child_org1)
-    DB::Organizations.add(child_org2)
+    organizations.add(org1)
+    organizations.add(child_org1)
+    organizations.add(child_org2)
 
-    DB::Organizations.add(org2)
-    DB::Organizations.add(child_org3)
+    organizations.add(org2)
+    organizations.add(child_org3)
 
     permission1 = { user_id: user[:id],
                     org_id:  root_org[:id],
@@ -42,7 +43,7 @@ describe "authorizer" do
 
   after(:each) do
     DB::Permissions.destroy_all
-    DB::Organizations.destroy_all
+    organizations.destroy_all
   end
 
   it "keeps individual user's access" do

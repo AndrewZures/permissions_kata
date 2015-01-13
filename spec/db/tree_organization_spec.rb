@@ -4,14 +4,8 @@ describe DB::TreeOrganizations do
   let(:organizations){ described_class }
 
   let(:root_org){   {id: :root,  parent_id: nil } }
-  let(:org){        {id: :_org,  parent_id: :root } }
-  let(:child_org){  {id: :child, parent_id: :_org } }
-
-  before(:each) do
-    # organizations.add(root_org)
-    # organizations.add(org)
-    # organizations.add(child_org)
-  end
+  let(:org){        {id: :org,  parent_id: :root } }
+  let(:child_org){  {id: :child, parent_id: :org } }
 
   after(:each) do
     organizations.destroy_all
@@ -40,13 +34,13 @@ describe DB::TreeOrganizations do
 
       expect(added1).to eq(true)
       expect(added2).to eq(false)
-      expect(organizations.org_tree).to eq({ root: { _org: {} } })
+      expect(organizations.org_tree).to eq({ root: { org: {} } })
     end
 
     it "adds org to tree" do
       organizations.add(root_org)
       organizations.add(org)
-      expect(organizations.org_tree).to eq({ root: { _org: {} } })
+      expect(organizations.org_tree).to eq({ root: { org: {} } })
     end
 
     it "adds child org to tree" do
@@ -54,7 +48,17 @@ describe DB::TreeOrganizations do
       organizations.add(org)
       organizations.add(child_org)
 
-      expect(organizations.org_tree).to eq({ root: { _org: { child: {} } } })
+      expect(organizations.org_tree).to eq({ root: { org: { child: {} } } })
+    end
+
+    it "does not add an org that cannot be connected to tree" do
+      organizations.add(root_org)
+      organizations.add(org)
+
+      child_org[:parent_id] = :bad_parent
+      organizations.add(child_org)
+
+      expect(organizations.org_tree).to eq({ root: { org: {} } })
     end
 
     it "removes an org from the tree" do
@@ -66,41 +70,59 @@ describe DB::TreeOrganizations do
       expect(organizations.org_tree).to eq({ root: { child: {} } })
     end
 
+    it "returns a list of parent org ids" do
+      organizations.add(root_org)
+      organizations.add(org)
+      organizations.add(child_org)
+
+      lineage = organizations.parent_ids_of(child_org)
+      expect(lineage).to eq([:child, :org, :root])
+    end
+
+    context "when assuring in-memory tree reflects db data" do
+
+     it "inserts into table when inserting into tree" do
+        organizations.add(root_org)
+        organizations.add(org)
+
+        table = organizations.org_table()
+        expect(table).to include(root_org)
+        expect(table).to include(org)
+      end
+
+      it "deletes from table when deleting from tree" do
+        organizations.add(root_org)
+        organizations.add(org)
+
+        table = organizations.org_table()
+        expect(table).to include(root_org)
+        expect(table).to include(org)
+
+        organizations.remove(org)
+
+        updated_table = organizations.org_table()
+        expect(updated_table).to include(root_org)
+        expect(updated_table).to_not include(org)
+      end
+
+      it "builds a tree from a table" do
+        table = [org, root_org, child_org]
+        organizations.build_table(table)
+
+        expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
+      end
+
+      it "does not add unconnected orgs when building tree" do
+        table = [org, root_org, child_org, {id: 134, parent_id: :unconnected } ]
+        organizations.build_table(table)
+
+        expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
+      end
+
+    end
+
   end
 
-  # it "does not add root org if root org already exists" do
-  #   second_root_org = {id: :root, parent_id: -1}
-  #   second_root = organizations.add(second_root_org)
-  #   expect(second_root).to eq(false)
-  # end
-  #
-  # it "does not add a duplicate organization" do
-  #   duplicated = organizations.add(org)
-  #   expect(duplicated).to eq(false)
-  # end
-  #
-  # it "does not add a child to existing child node (limit tree to 3 levels)" do
-  #   great_grandchild_org = { id: 8, parent_id: child_org[:id] }
-  #   added = organizations.add(great_grandchild_org)
-  #   expect(added).to eq(false)
-  # end
-  #
-  # it "does not add org if cannot be connected to existing org tree structured" do
-  #   child_org = { id: 8, parent_id: :not_connected_to_tree }
-  #   added = organizations.add(child_org)
-  #   expect(added).to eq(false)
-  # end
-  #
-  # it "finds a parent organization" do
-  #   expect(organizations.parent_of(root_org)).to eq(nil)
-  #   expect(organizations.parent_of(org)).to eq(root_org)
-  #   expect(organizations.parent_of(child_org)).to eq(org)
-  # end
-  #
-  # it "returns an list of parent org ids" do
-  #   lineage = organizations.parent_ids_of(child_org)
-  #   expect(lineage).to eq([org[:id], root_org[:id]])
-  # end
 
 end
 

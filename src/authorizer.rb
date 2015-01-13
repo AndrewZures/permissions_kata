@@ -1,8 +1,12 @@
 require_relative 'db/permissions'
 require_relative 'db/organizations'
+require_relative 'db/tree_organizations'
 require_relative 'db/roles'
 
 class Authorizer
+
+  @@organizations = DB::TreeOrganizations
+  # @@organizations = DB::Organizations
 
   AUTHORIZED_ROLES = [
     DB::Roles::Types[:ADMIN],
@@ -11,7 +15,7 @@ class Authorizer
 
 
   def self.authorized?(org, user)
-    return default_error_status if DB::Organizations.find(org).nil?
+    return default_error_status if @@organizations.find(org).nil?
 
     org_lineage = build_org_lineage(org)
     permission = find_best_permission(org_lineage, user)
@@ -19,7 +23,8 @@ class Authorizer
   end
 
   def self.build_org_lineage(org)
-    [org[:id]].concat(DB::Organizations.parent_ids_of(org))
+    #changed this
+    @@organizations.parent_ids_of(org)
   end
 
   def self.format_status(permission)

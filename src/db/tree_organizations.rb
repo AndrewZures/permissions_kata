@@ -7,18 +7,38 @@ module DB
     def self.add(org)
       if can_be_root?(org)
         add_root(org)
-        true
       else
-        _add(org)
+        insert_into_tree(@@tree, org)
       end
     end
 
-    def self.add_root(org)
-      @@tree[org[:id]] = {}
+    def self.build_table(table)
+      loop do
+        initial = table.dup
+        table.delete_if { |o| add(o) }
+        break if initial == table
+      end
     end
 
-    def self._add(org)
-      insert(@@tree, org)
+    def self.find(org)
+      found_id = find_in_tree(@@tree, org)
+      find_in_table(found_id)
+    end
+
+    def self.find_in_table(id)
+      @@table.find{ |o| o[:id] == id }
+    end
+
+    def self.org_table
+      @@table
+    end
+
+    def self.org_tree
+      @@tree
+    end
+
+    def self.remove(org)
+      remove_from_tree(@@tree, org)
     end
 
     def self.destroy_all
@@ -26,71 +46,98 @@ module DB
       @@table = []
     end
 
-    def self.org_tree
-      @@tree
+    def self.parent_ids_of(org)
+      lineage_ids_tree(@@tree, org)
     end
 
-    def self.addable?(org)
-      can_be_added?(org)
-    end
+    private
 
-    def self.can_be_added?(org)
-      existing_org_ids.include?(org[:parent_id])
-    end
+    def self.find_in_tree(node, org)
+      return nil if node.empty?
 
-    def self.existing_org_ids
-      _existing_org_id(@@tree).flatten
-    end
-
-    def self.insert(node, org)
-      node.each do |k, v|
-        if k == org[:parent_id] && !v.key?(org[:id])
-          v[org[:id]] = {}
-          return true
+      node.each do |id, children|
+        if id == org[:id]
+          return id
         else
-          insert(v, org)
+          status = find_in_tree(children, org)
+          return status if !status.nil?
+        end
+      end
+
+      return nil
+    end
+
+    def self.lineage_ids_tree(node, org)
+      return [] if node.empty?
+
+      node.each do |id, children|
+        if org[:id] == id
+          return [id]
+        else
+          children_status = lineage_ids_tree(children, org)
+          return children_status << id if !children_status.empty?
+        end
+      end
+
+      return []
+    end
+
+    def self.insert_into_tree(node, org)
+      return false if node.empty?
+
+      node.each do |id, children|
+        if can_add_as_child?(org, id, children)
+          return add_to_children(org, children)
+        else
+          insert_into_tree(children, org)
         end
       end
 
       return false
     end
 
-    def self.remove(org)
-      _remove(@@tree, org)
-    end
+    def self.remove_from_tree(node, org)
+      to_remove = nil
 
-
-    def self._remove(node, org)
-      found = nil
-
-      node.each do |k, v|
-        if k == org[:id]
-          found = {key: k, values: v}
+      node.each do |id, children|
+        if id == org[:id]
+          to_remove = { id: id, children: children}
           break;
         else
-          _remove(v, org)
+          remove_from_tree(children, org)
         end
       end
 
-      if !found.nil?
-        node.delete(found[:key])
-        node.merge!(found[:values])
-        true
-      else
-        false
-      end
-
+      !to_remove.nil? ? remove_node(to_remove, node, org) : false
     end
 
-    def remove_node(parent, node)
+    def self.remove_node(found, node, org)
+      return false if found[:id] == :root
 
+      node.delete(found[:id])
+      node.merge!(found[:children])
+      @@table.delete(org)
+      true
     end
 
-    private
+    def self.can_add_as_child?(org, node_id, node_children)
+      node_id == org[:parent_id] && !node_children.key?(org[:id])
+    end
+
+    def self.add_to_children(org, children)
+      children[org[:id]] = {}
+      @@table << org
+      return true
+    end
+
+    def self.add_root(org)
+      add_to_children(org, @@tree)
+    end
 
     def self.can_be_root?(org)
       !has_root? && org[:id] == :root
     end
+
 
     def self.has_root?
       @@tree.key?(:root)
