@@ -1,17 +1,17 @@
 module DB
   class Organizations
 
-    @@list = []
+    @@table = []
 
     REQUIRED_FIELDS = [:id, :parent_id]
 
     def self.find(id)
-      @@list.find{ |org| org[:id] == id }
+      @@table.find{ |org| org[:id] == id }
     end
 
     def self.add(org)
       if valid?(org)
-        @@list << org
+        @@table << org
         true
       else
         false
@@ -19,7 +19,7 @@ module DB
     end
 
     def self.destroy_all
-      @@list = []
+      @@table = []
     end
 
     def self.parent_ids_of(id)
@@ -50,7 +50,7 @@ module DB
     end
 
     def self.duplicate?(org)
-      @@list.reduce(false){ |agg, o| agg || o[:id] == org[:id] }
+      @@table.reduce(false){ |agg, o| agg || o[:id] == org[:id] }
     end
 
     def self.can_add_to_tree?(org)
@@ -72,7 +72,7 @@ module DB
     end
 
     def self.has_root
-      @@list.reduce(false){ |agg, org| agg || org[:parent_id] == :root }
+      @@table.reduce(false){ |agg, org| agg || org[:parent_id] == :root }
     end
 
   end

@@ -1,12 +1,12 @@
 module DB
   class Permissions
 
-    @@list = []
+    @@table = []
 
     REQUIRED_FIELDS = [:role, :org_id, :user_id]
 
     def self.add(permission)
-      @@list << permission if valid_permission?(permission)
+      @@table << permission if valid_permission?(permission)
     end
 
     def self.valid_permission?(permission)
@@ -15,11 +15,11 @@ module DB
 
     def self.find(org_id, user_id)
       options = { org_id: org_id, user_id: user_id }
-      @@list.find{ |p| filter(p, options) }
+      @@table.find{ |p| filter(p, options) }
     end
 
     def self.search(options)
-      @@list.find_all{ |permission| filter(permission, options) }
+      @@table.find_all{ |permission| filter(permission, options) }
     end
 
 
@@ -33,7 +33,7 @@ module DB
     end
 
     def self.destroy_all
-      @@list = []
+      @@table = []
     end
 
   end
