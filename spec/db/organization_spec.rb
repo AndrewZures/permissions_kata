@@ -1,7 +1,7 @@
 require_relative '../../src/db/organizations'
 
 describe DB::Organizations do
-  let(:organizations){ DB::Organizations.new() }
+  let(:organizations){ DB::Organizations.instance() }
 
   let(:root_org){   {id: :root,  parent_id: nil } }
   let(:org){        {id: :_org,  parent_id: :root } }

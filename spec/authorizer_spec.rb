@@ -5,10 +5,10 @@ require_relative '../src/db/roles'
 
 describe Authorizer do
 
-  let(:organizations){ DB::Organizations.new() } #Basic Strategy
-  # let(:organizations){ DB::TreeOrganizations.new() } #Tree Strategy
-  #
-  let(:permissions){ DB::Permissions.new() }
+  let(:organizations){ DB::Organizations.instance() } #Basic Strategy
+  # let(:organizations){ DB::TreeOrganizations.instance() } #Tree Strategy
+
+  let(:permissions){ DB::Permissions.instance() }
   let(:authorizer){ Authorizer.new(organizations, permissions) }
 
   let(:user){ { id: 10 } }

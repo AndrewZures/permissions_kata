@@ -1,5 +1,8 @@
+require 'singleton'
+
 module DB
   class TreeOrganizations
+    include Singleton
 
     FIRST_LEVEL = 1
     MAX_LEVEL   = 3

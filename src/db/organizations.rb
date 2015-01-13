@@ -1,5 +1,8 @@
+require 'singleton'
+
 module DB
   class Organizations
+    include Singleton
 
     @@table = []
 

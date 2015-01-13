@@ -2,6 +2,7 @@ require_relative 'db/permissions'
 require_relative 'db/organizations'
 require_relative 'db/tree_organizations'
 require_relative 'db/roles'
+require 'singleton'
 
 class Authorizer
 
