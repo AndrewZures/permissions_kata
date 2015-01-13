@@ -132,8 +132,12 @@ module DB
 
     def self.delete_from_table(org, found, parent_id)
       @@table.delete(org)
-      @@table.each { |o| o[:parent_id] = parent_id if o[:parent_id] == found[:id] }
+      update_parent_ids(found[:id], parent_id)
       true
+    end
+
+    def self.update_parent_ids(old_id, new_id)
+      @@table.each { |o| o[:parent_id] = new_id if o[:parent_id] == old_id }
     end
 
     def self.can_add_as_child?(org, node_id, node_children)

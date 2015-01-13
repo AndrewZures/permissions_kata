@@ -4,7 +4,7 @@ describe DB::TreeOrganizations do
   let(:organizations){ described_class }
 
   let(:root_org){   {id: :root,  parent_id: nil } }
-  let(:org){        {id: :org,  parent_id: :root } }
+  let(:org){        {id: :org,   parent_id: :root } }
   let(:child_org){  {id: :child, parent_id: :org } }
 
   def build_default_tree
