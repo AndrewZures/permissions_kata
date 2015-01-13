@@ -7,7 +7,7 @@ module DB
     @@tree = {}
     @@table = []
 
-    def self.add(org)
+    def add(org)
       if can_be_root?(org)
         add_root(org)
       else
@@ -15,37 +15,37 @@ module DB
       end
     end
 
-    def self.find(org)
+    def find(org)
       found_id = find_id(@@tree, org)
       find_by_id(found_id)
     end
 
-    def self.find_by_id(id)
-      find_org_in_table(id)
+    def find_by_id(id)
+      @@table.find{ |o| o[:id] == id }
     end
 
-    def self.org_table
+    def org_table
       @@table
     end
 
-    def self.org_tree
+    def org_tree
       @@tree
     end
 
-    def self.remove(org)
+    def remove(org)
       remove_from_tree(@@tree, org)
     end
 
-    def self.destroy_all
+    def destroy_all
       @@tree = {}
       @@table = []
     end
 
-    def self.lineage_for(org)
+    def lineage_for(org)
       lineage_ids_tree(@@tree, org)
     end
 
-    def self.build_tree(table)
+    def build_tree(table)
       loop do
         initial = table.dup
         table.delete_if { |o| add(o) }
@@ -55,11 +55,7 @@ module DB
 
     private
 
-    def self.find_org_in_table(id)
-      @@table.find{ |o| o[:id] == id }
-    end
-
-    def self.find_id(node, org)
+    def find_id(node, org)
       return nil if node.empty?
 
       node.each do |id, children|
@@ -74,7 +70,7 @@ module DB
       return nil
     end
 
-    def self.lineage_ids_tree(node, org)
+    def lineage_ids_tree(node, org)
       return [] if node.empty?
 
       node.each do |id, children|
@@ -89,7 +85,7 @@ module DB
       return []
     end
 
-    def self.insert_into_tree(node, org, lvl)
+    def insert_into_tree(node, org, lvl)
       return false if node.empty? || lvl >= MAX_LEVEL
 
       node.each do |id, children|
@@ -103,7 +99,7 @@ module DB
       return false
     end
 
-    def self.remove_from_tree(node, org, parent_id=nil)
+    def remove_from_tree(node, org, parent_id=nil)
       to_remove = nil
 
       node.each do |id, children|
@@ -118,47 +114,47 @@ module DB
       !to_remove.nil? ? remove_node(to_remove, node, org, parent_id) : false
     end
 
-    def self.remove_node(found, node, org, parent_id)
+    def remove_node(found, node, org, parent_id)
       return false if found[:id] == :root
 
       delete_from_tree(node, found)
       delete_from_table(org, found, parent_id)
     end
 
-    def self.delete_from_tree(node, found)
+    def delete_from_tree(node, found)
       node.delete(found[:id])
       node.merge!(found[:children])
     end
 
-    def self.delete_from_table(org, found, parent_id)
+    def delete_from_table(org, found, parent_id)
       @@table.delete(org)
       update_parent_ids(found[:id], parent_id)
       true
     end
 
-    def self.update_parent_ids(old_id, new_id)
+    def update_parent_ids(old_id, new_id)
       @@table.each { |o| o[:parent_id] = new_id if o[:parent_id] == old_id }
     end
 
-    def self.can_add_as_child?(org, node_id, node_children)
+    def can_add_as_child?(org, node_id, node_children)
       node_id == org[:parent_id] && !node_children.key?(org[:id])
     end
 
-    def self.add_to_children(org, children)
+    def add_to_children(org, children)
       children[org[:id]] = {}
       @@table << org
       return true
     end
 
-    def self.add_root(org)
+    def add_root(org)
       add_to_children(org, @@tree)
     end
 
-    def self.can_be_root?(org)
+    def can_be_root?(org)
       !has_root? && org[:id] == :root
     end
 
-    def self.has_root?
+    def has_root?
       @@tree.key?(:root)
     end
 

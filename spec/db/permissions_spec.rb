@@ -2,7 +2,7 @@ require_relative '../../src/db/permissions'
 require_relative '../../src/db/roles'
 
 describe DB::Permissions do
-  let(:permissions){ described_class }
+  let(:permissions){ DB::Permissions.new() }
   let(:role_types){ DB::Roles::Types }
 
   let(:permission1){ { user_id: 1, org_id: 1, role: role_types[:USER] } }
