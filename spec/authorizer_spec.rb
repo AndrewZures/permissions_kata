@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Authorizer do
 
   let(:organizations){ DB::Organizations.instance() } #Basic Strategy
+  let(:role_types){ DB::Roles::Types }
   # let(:organizations){ DB::TreeOrganizations.instance() } #Tree Strategy
 
   let(:permissions){ DB::Permissions.instance() }
@@ -31,13 +32,13 @@ describe Authorizer do
 
     permission1 = { user_id: user[:id],
                     org_id:  root_org[:id],
-                    role:    DB::Roles::Types[:DENIED] }
+                    role:    role_types[:DENIED] }
     permission2 = { user_id: user[:id],
                     org_id:  org1[:id],
-                    role:    DB::Roles::Types[:ADMIN] }
+                    role:    role_types[:ADMIN] }
     permission3 = { user_id: user[:id],
                     org_id:  child_org2[:id],
-                    role:    DB::Roles::Types[:USER] }
+                    role:    role_types[:USER] }
 
     permissions.add(permission1)
     permissions.add(permission2)
@@ -108,10 +109,10 @@ describe Authorizer do
       org_access   = authorizer.authorized?(org2, user)
       child_access = authorizer.authorized?(child_org3, user)
 
-      admin_authorized = {authorized: false, status: "denied"}
-      expect(root_access).to eq(admin_authorized)
-      expect(org_access).to eq(admin_authorized)
-      expect(child_access).to eq(admin_authorized)
+      denied = {authorized: false, status: "denied"}
+      expect(root_access).to eq(denied)
+      expect(org_access).to eq(denied)
+      expect(child_access).to eq(denied)
     end
 
     it "prioritizes current permission over parent permissions" do
@@ -123,6 +124,17 @@ describe Authorizer do
       result = authorizer.authorized?(child_org1, user)
 
       expect(result).to eq({authorized: true, status: "admin" })
+    end
+
+    it "updates authorization status after permissions update" do
+      initial = authorizer.authorized?(child_org3, user)
+      expect(initial).to eq({authorized: false, status: role_types[:DENIED].to_s })
+
+      new_permission = { user_id: user[:id], org_id:  child_org3[:id], role: role_types[:ADMIN] }
+      permissions.add(new_permission)
+
+      updated = authorizer.authorized?(child_org3, user)
+      expect(updated).to eq({authorized: true, status: role_types[:ADMIN].to_s })
     end
 
     it "children of same parent can have different privilege settings" do
