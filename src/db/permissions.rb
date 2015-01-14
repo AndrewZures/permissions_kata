@@ -2,7 +2,6 @@ require 'singleton'
 
 module DB
   class Permissions
-
     include Singleton
 
     @@table = []

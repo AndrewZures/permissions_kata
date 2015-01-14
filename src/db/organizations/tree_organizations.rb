@@ -27,14 +27,6 @@ module DB
       @@table.find{ |o| o[:id] == id }
     end
 
-    def org_table
-      @@table
-    end
-
-    def org_tree
-      @@tree
-    end
-
     def remove(org)
       remove_from_tree(@@tree, org)
     end
@@ -54,6 +46,14 @@ module DB
         table.delete_if { |o| add(o) }
         break if initial == table
       end
+    end
+
+    def table
+      @@table
+    end
+
+    def tree
+      @@tree
     end
 
     private

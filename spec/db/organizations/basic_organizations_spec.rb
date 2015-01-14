@@ -55,4 +55,21 @@ describe DB::Organizations do
     expect(lineage).to eq([child_org[:id], org[:id], root_org[:id]])
   end
 
+  it "removes an org from the tree" do
+    organizations.remove(org)
+    expect(organizations.table).to_not include(org)
+  end
+
+   it "updates table after node deletion" do
+
+     unchanged = organizations.find_by_id(child_org[:id])
+     expect(unchanged).to eq(child_org)
+
+     organizations.remove(org)
+
+     updated = organizations.find_by_id(child_org[:id])
+     expected_child = { id: child_org[:id], parent_id: root_org[:id] }
+     expect(updated).to eq(expected_child)
+   end
+
 end

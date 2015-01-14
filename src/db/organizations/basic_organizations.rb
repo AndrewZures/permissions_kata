@@ -25,6 +25,15 @@ module DB
       end
     end
 
+    def remove(org)
+      @@table.delete(org)
+      update_parent_ids(org[:id], org[:parent_id])
+    end
+
+    def table
+      @@table
+    end
+
     def destroy_all
       @@table = []
     end
@@ -49,13 +58,16 @@ module DB
 
     private
 
+    def update_parent_ids(old_id, new_id)
+      @@table.each{ |o| o[:parent_id] = new_id if o[:parent_id] == old_id }
+    end
+
     def addable?(org)
       has_fields?(org) && can_add_to_tree?(org)
     end
 
     def has_fields?(org)
       return if !org.is_a?(Hash)
-
       REQUIRED_FIELDS.reduce(true){ |agg, f| agg && org.key?(f) }
     end
 

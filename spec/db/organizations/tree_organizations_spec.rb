@@ -21,7 +21,7 @@ describe DB::TreeOrganizations do
 
     it "adds root org to tree" do
       organizations.add(root_org)
-      expect(organizations.org_tree).to eq({ root: {} })
+      expect(organizations.tree).to eq({ root: {} })
     end
 
     it "does not add more than one root" do
@@ -30,7 +30,7 @@ describe DB::TreeOrganizations do
 
       expect(added1).to eq(true)
       expect(added2).to eq(false)
-      expect(organizations.org_tree).to eq({ root: {} })
+      expect(organizations.tree).to eq({ root: {} })
     end
 
     it "does not add duplicate org" do
@@ -40,13 +40,13 @@ describe DB::TreeOrganizations do
 
       expect(added1).to eq(true)
       expect(added2).to eq(false)
-      expect(organizations.org_tree).to eq({ root: { org: {} } })
+      expect(organizations.tree).to eq({ root: { org: {} } })
     end
 
     it "adds org to tree" do
       organizations.add(root_org)
       organizations.add(org)
-      expect(organizations.org_tree).to eq({ root: { org: {} } })
+      expect(organizations.tree).to eq({ root: { org: {} } })
     end
 
     it "adds child org to tree" do
@@ -54,7 +54,7 @@ describe DB::TreeOrganizations do
       organizations.add(org)
       organizations.add(child_org)
 
-      expect(organizations.org_tree).to eq({ root: { org: { child: {} } } })
+      expect(organizations.tree).to eq({ root: { org: { child: {} } } })
     end
 
     it "does not add an org that cannot be connected to tree" do
@@ -64,7 +64,7 @@ describe DB::TreeOrganizations do
       child_org[:parent_id] = :bad_parent
       organizations.add(child_org)
 
-      expect(organizations.org_tree).to eq({ root: { org: {} } })
+      expect(organizations.tree).to eq({ root: { org: {} } })
     end
 
     it 'does not add child not to existing child node' do
@@ -72,21 +72,21 @@ describe DB::TreeOrganizations do
       added = organizations.add({id: 1234, parent_id: child_org[:id]})
 
       expect(added).to eq(false)
-      expect(organizations.org_tree).to eq({ root: { org: { child: {} } } })
+      expect(organizations.tree).to eq({ root: { org: { child: {} } } })
     end
 
     it "removes an org from the tree" do
       build_default_tree()
       organizations.remove(org)
 
-      expect(organizations.org_tree).to eq({ root: { child: {} } })
+      expect(organizations.tree).to eq({ root: { child: {} } })
     end
 
     it "does not remove root" do
       build_default_tree()
       organizations.remove(root_org)
 
-      expect(organizations.org_tree).to eq({ root: { org: { child: {} }}})
+      expect(organizations.tree).to eq({ root: { org: { child: {} }}})
     end
 
     it "returns a list of parent org ids" do
@@ -101,7 +101,7 @@ describe DB::TreeOrganizations do
      it "inserts into table when inserting into tree" do
         build_default_tree()
 
-        table = organizations.org_table()
+        table = organizations.table()
         expect(table).to include(root_org)
         expect(table).to include(org)
         expect(table).to include(child_org)
@@ -110,12 +110,12 @@ describe DB::TreeOrganizations do
       it "deletes from table when deleting from tree" do
         build_default_tree()
 
-        table = organizations.org_table()
+        table = organizations.table()
         expect(table).to include(org)
 
         organizations.remove(org)
 
-        updated_table = organizations.org_table()
+        updated_table = organizations.table()
         expect(updated_table).to_not include(org)
       end
 
@@ -136,14 +136,14 @@ describe DB::TreeOrganizations do
         table = [org, root_org, child_org]
         organizations.build_tree(table)
 
-        expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
+        expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
       end
 
       it "does not add unconnected orgs when building tree" do
         table = [org, root_org, child_org, {id: 134, parent_id: :unconnected } ]
         organizations.build_tree(table)
 
-        expect(organizations.org_tree()).to eq({ root: { org: { child: {} }}})
+        expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
       end
     end
   end
