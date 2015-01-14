@@ -1,8 +1,6 @@
-[kata]: http://www.adomokos.com/2012/10/the-organizations-users-roles-kata.html
-
 # Permissions Kata
 
-The repo is my solution to the "Organizations, Users, Roles" Kata found [here](kata)
+The repo is my solution to the "Organizations, Users, Roles" Kata found at: http://www.adomokos.com/2012/10/the-organizations-users-roles-kata.html
 
 ### To Build
 * run `bundle install`
