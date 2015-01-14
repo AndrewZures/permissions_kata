@@ -95,56 +95,56 @@ describe DB::TreeOrganizations do
       lineage = organizations.lineage_for(child_org)
       expect(lineage).to eq([:child, :org, :root])
     end
+  end
 
-    context "when assuring in-memory tree reflects db data" do
+  context "when assuring in-memory tree reflects db data" do
 
-     it "inserts into table when inserting into tree" do
-        build_default_tree()
+   it "inserts into table when inserting into tree" do
+      build_default_tree()
 
-        table = organizations.table()
-        expect(table).to include(root_org)
-        expect(table).to include(org)
-        expect(table).to include(child_org)
-      end
+      table = organizations.table()
+      expect(table).to include(root_org)
+      expect(table).to include(org)
+      expect(table).to include(child_org)
+    end
 
-      it "deletes from table when deleting from tree" do
-        build_default_tree()
+    it "deletes from table when deleting from tree" do
+      build_default_tree()
 
-        table = organizations.table()
-        expect(table).to include(org)
+      table = organizations.table()
+      expect(table).to include(org)
 
-        organizations.remove(org)
+      organizations.remove(org)
 
-        updated_table = organizations.table()
-        expect(updated_table).to_not include(org)
-      end
+      updated_table = organizations.table()
+      expect(updated_table).to_not include(org)
+    end
 
-      it "updates table after node deletion" do
-        build_default_tree()
+    it "updates table after node deletion" do
+      build_default_tree()
 
-        unchanged = organizations.find_by_id(child_org[:id])
-        expect(unchanged).to eq(child_org)
+      unchanged = organizations.find_by_id(child_org[:id])
+      expect(unchanged).to eq(child_org)
 
-        organizations.remove(org)
+      organizations.remove(org)
 
-        updated = organizations.find_by_id(child_org[:id])
-        expected_child = { id: child_org[:id], parent_id: root_org[:id] }
-        expect(updated).to eq(expected_child)
-      end
+      updated = organizations.find_by_id(child_org[:id])
+      expected_child = { id: child_org[:id], parent_id: root_org[:id] }
+      expect(updated).to eq(expected_child)
+    end
 
-      it "builds a tree from a table" do
-        table = [org, root_org, child_org]
-        organizations.build_tree(table)
+    it "builds a tree from a table" do
+      table = [org, root_org, child_org]
+      organizations.build_tree(table)
 
-        expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
-      end
+      expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
+    end
 
-      it "does not add unconnected orgs when building tree" do
-        table = [org, root_org, child_org, {id: 134, parent_id: :unconnected } ]
-        organizations.build_tree(table)
+    it "does not add unconnected orgs when building tree" do
+      table = [org, root_org, child_org, {id: 134, parent_id: :unconnected } ]
+      organizations.build_tree(table)
 
-        expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
-      end
+      expect(organizations.tree()).to eq({ root: { org: { child: {} }}})
     end
   end
 

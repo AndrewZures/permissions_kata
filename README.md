@@ -3,6 +3,7 @@
 The repo is my solution to the "Organizations, Users, Roles" Kata found at: http://www.adomokos.com/2012/10/the-organizations-users-roles-kata.html
 
 ### To Build
+* intended for ruby 2.1
 * run `bundle install`
 
 ### To Test

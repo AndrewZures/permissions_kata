@@ -6,6 +6,7 @@ module DB
 
     @@table = []
 
+    MAX_LEVEL = 3
     REQUIRED_FIELDS = [:id, :parent_id]
 
     def find_by_id(id)
@@ -40,15 +41,15 @@ module DB
 
     def lineage_for(org)
       return [] if !has_fields?(org)
-      parent_ids = [org[:id]]
+      lineage = [org[:id]]
 
       found = parent_of(org)
       while !found.nil?
-        parent_ids << found[:id]
+        lineage << found[:id]
         found = parent_of(found)
       end
 
-      parent_ids
+      lineage
     end
 
     def parent_of(org)
@@ -85,8 +86,7 @@ module DB
     end
 
     def child_org?(org)
-      lineage = lineage_for(org)
-      lineage.length > 2
+      lineage_for(org).length >= MAX_LEVEL
     end
 
     def can_be_root?(org)
