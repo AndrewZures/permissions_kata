@@ -1,7 +1,4 @@
-require_relative '../src/authorizer'
-require_relative '../src/db/organizations'
-require_relative '../src/db/permissions'
-require_relative '../src/db/roles'
+require 'spec_helper'
 
 describe Authorizer do
 

@@ -1,5 +1,4 @@
-require_relative '../../src/db/permissions'
-require_relative '../../src/db/roles'
+require 'spec_helper'
 
 describe DB::Permissions do
   let(:permissions){ DB::Permissions.instance }

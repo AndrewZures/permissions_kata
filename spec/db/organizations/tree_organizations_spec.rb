@@ -1,4 +1,4 @@
-require_relative '../../src/db/tree_organizations'
+require 'spec_helper'
 
 describe DB::TreeOrganizations do
   let(:organizations){ DB::TreeOrganizations.instance() }
