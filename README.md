@@ -18,11 +18,11 @@ The repo is my solution to the "Organizations, Users, Roles" Kata found at: http
 
 * class @@tables are meant to represent the entity's underlying DB table
 
-* There are <b>two</b> separate implementations of the organization entity in my solution.  Both solutions implement the same interface:
+* There are **two** separate implementations of the organization entity in my solution.  Both solutions implement the same interface:
   * Basic:
       * org traversals reach into the table for each parent/child lookup
       * This is more table (DB) intensive but the code is simpler and cleaner
   * Tree:
     * An in-memory org tree is kept up-to-date in the org singleton instance
     * This strategy is more complicated, since the org tree must be kept up-to-date and must keep the table up-to-date, but it reduces interactions with the underlying table, so it is likely to be less DB intensive.
-    * Requires the in-memory tree to be built from an existing table when instantiated
+    * Would require the in-memory tree to be built from an existing table when instantiated if using an existing table
